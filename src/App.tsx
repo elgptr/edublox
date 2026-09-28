@@ -1,40 +1,40 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useAuth } from '@hooks/useAuth';
+import { LoginScreen } from '@screens/LoginScreen';
+import { SetupScreen } from '@screens/SetupScreen';
+import { AIKeyInputScreen } from '@screens/AIKeyInputScreen';
+import { QuestionScreen } from '@screens/QuestionScreen';
+import { ResultScreen } from '@screens/ResultScreen';
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
+  const { isLoading, isLoggedIn } = useAuth();
+
+  if (isLoading) {
+    return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <ActivityIndicator size="large" color="#2563eb" />
+    </View>;
+  }
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Edublox</Text>
-      <Text style={styles.subtitle}>Educational Try Out & Training App</Text>
-      <Text style={styles.description}>
-        Screens implementation in progress. This is the main app entry point.
-      </Text>
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false, animationEnabled: true }}>
+        {isLoggedIn ? (
+          <>
+            <Stack.Screen name="Setup" component={SetupScreen} />
+            <Stack.Screen name="AIKeyInput" component={AIKeyInputScreen} />
+            <Stack.Screen name="Question" component={QuestionScreen} />
+            <Stack.Screen name="Result" component={ResultScreen} />
+          </>
+        ) : (
+          <Stack.Screen name="Login" component={LoginScreen} />
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#2563eb',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 18,
-    color: '#666',
-    marginBottom: 16,
-  },
-  description: {
-    fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
-  },
-});
