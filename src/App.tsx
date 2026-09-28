@@ -22,7 +22,7 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false, animationEnabled: true }}>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isLoggedIn ? (
           <>
             <Stack.Screen name="Setup" component={SetupScreen} />
@@ -37,4 +37,5 @@ export default function App() {
     </NavigationContainer>
   );
 }
+
 

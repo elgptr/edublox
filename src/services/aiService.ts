@@ -1,12 +1,12 @@
 import { OpenAI } from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import Anthropic from '@anthropic-ai/sdk';
-import {
+import type {
   GenerateQuestionsRequest,
   GenerateQuestionsResponse,
   Question,
   AppError,
-} from '@types/index';
+} from '../types';
 
 export class AIService {
   static async generateQuestions(
@@ -33,7 +33,10 @@ export class AIService {
       const questions = this.parseQuestionsJSON(questionsJSON);
       return { questions, generatedAt: new Date() };
     } catch (error) {
-      if (error instanceof AppError) throw error;
+      const isAppError = (e: unknown): e is AppError => {
+        return typeof e === 'object' && e !== null && 'code' in e && 'message' in e;
+      };
+      if (isAppError(error)) throw error;
       throw this.createError('GENERATION_ERROR', 'Failed to generate questions');
     }
   }

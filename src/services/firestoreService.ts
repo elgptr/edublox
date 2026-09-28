@@ -10,7 +10,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import firebaseService from './firebaseService';
-import { ExamResult, ExamSetup } from '@types/index';
+import type { ExamResult, ExamSetup } from '../types';
 
 export class FirestoreService {
   private db = firebaseService.getFirestore();

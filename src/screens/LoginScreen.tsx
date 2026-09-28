@@ -3,11 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView 
 import firebaseService from '@services/firebaseService';
 import firestoreService from '@services/firestoreService';
 
-interface LoginScreenProps {
-  onLoginSuccess: (userId: string) => void;
-}
-
-export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
+export const LoginScreen: React.FC<{ navigation?: any; route?: any }> = ({ navigation, route }) => {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,8 +28,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     setLoading(true);
     setError('');
     try {
-      const result = await firebaseService.login(email, password);
-      onLoginSuccess(result.user.uid);
+      await firebaseService.login(email, password);
+      Alert.alert('Sukses', 'Login berhasil');
     } catch (err: any) {
       setError(err.message || 'Login gagal');
     } finally {

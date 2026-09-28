@@ -4,7 +4,7 @@
  */
 
 import * as Keychain from 'react-native-keychain';
-import { AppError } from '@types/index';
+import type { AppError } from '../types';
 
 export class EncryptionService {
   private static readonly SERVICE_NAME = 'edublox-ai-keys';
