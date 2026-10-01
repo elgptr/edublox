@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { keyStorageService } from '../services/keyStorageService';
-
-export type AIProvider = 'openai' | 'gemini' | 'claude';
+import { AIService, AIProvider, ActiveKeyResult } from '../services/aiService';
 
 export const useAIKey = () => {
   const [keys, setKeys] = useState<{ [key: string]: string | null }>({
@@ -9,6 +8,7 @@ export const useAIKey = () => {
     gemini: null,
     claude: null,
   });
+  const [activeKeyInfo, setActiveKeyInfo] = useState<ActiveKeyResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -22,6 +22,14 @@ export const useAIKey = () => {
       const gemini = await keyStorageService.getKey('gemini');
       const claude = await keyStorageService.getKey('claude');
       setKeys({ openai, gemini, claude });
+
+      // Resolve key aktif (custom key vs system default key)
+      try {
+        const resolved = await AIService.getActiveKey();
+        setActiveKeyInfo(resolved);
+      } catch {
+        setActiveKeyInfo(null);
+      }
     } catch (error) {
       console.error('Error loading AI keys:', error);
     } finally {
@@ -33,6 +41,8 @@ export const useAIKey = () => {
     try {
       await keyStorageService.saveKey(provider, key);
       setKeys(prev => ({ ...prev, [provider]: key }));
+      const resolved = await AIService.getActiveKey(provider);
+      setActiveKeyInfo(resolved);
       return { success: true };
     } catch (error) {
       console.error(`Error saving ${provider} key:`, error);
@@ -44,6 +54,12 @@ export const useAIKey = () => {
     try {
       await keyStorageService.removeKey(provider);
       setKeys(prev => ({ ...prev, [provider]: null }));
+      try {
+        const resolved = await AIService.getActiveKey();
+        setActiveKeyInfo(resolved);
+      } catch {
+        setActiveKeyInfo(null);
+      }
       return { success: true };
     } catch (error) {
       console.error(`Error removing ${provider} key:`, error);
@@ -53,9 +69,13 @@ export const useAIKey = () => {
 
   return {
     keys,
+    activeKeyInfo,
+    isUsingSystemKey: activeKeyInfo?.isSystemDefault ?? false,
+    hasAvailableKey: !!activeKeyInfo?.apiKey,
     isLoading,
     saveKey,
     removeKey,
     refreshKeys: loadKeys,
+    testConnection: AIService.testConnection,
   };
 };

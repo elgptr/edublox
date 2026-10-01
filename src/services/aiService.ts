@@ -1,6 +1,7 @@
 import { OpenAI } from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import Anthropic from '@anthropic-ai/sdk';
+import { keyStorageService } from './keyStorageService';
 import type {
   GenerateQuestionsRequest,
   GenerateQuestionsResponse,
@@ -8,7 +9,101 @@ import type {
   AppError,
 } from '../types';
 
+export type AIProvider = 'openai' | 'gemini' | 'claude';
+
+export interface ActiveKeyResult {
+  apiKey: string;
+  provider: AIProvider;
+  isSystemDefault: boolean;
+}
+
+export interface ConnectionTestResult {
+  success: boolean;
+  message: string;
+}
+
 export class AIService {
+  /**
+   * Mengambil API key yang aktif:
+   * 1. Cek Custom Key milik user di local encrypted storage.
+   * 2. Jika tidak ada / kosong, otomatis fallback ke EXPO_PUBLIC_SYSTEM_GEMINI_KEY.
+   */
+  static async getActiveKey(preferredProvider: AIProvider = 'gemini'): Promise<ActiveKeyResult> {
+    try {
+      const userCustomKey = await keyStorageService.getKey(preferredProvider);
+      if (userCustomKey && userCustomKey.trim().length > 0) {
+        return {
+          apiKey: userCustomKey.trim(),
+          provider: preferredProvider,
+          isSystemDefault: false,
+        };
+      }
+    } catch (e) {
+      console.warn('Gagal membaca custom key dari storage:', e);
+    }
+
+    // Fallback ke System Gemini Key
+    const systemKey = process.env.EXPO_PUBLIC_SYSTEM_GEMINI_KEY || '';
+    if (systemKey && systemKey.trim().length > 0) {
+      return {
+        apiKey: systemKey.trim(),
+        provider: 'gemini',
+        isSystemDefault: true,
+      };
+    }
+
+    throw this.createError(
+      'NO_API_KEY',
+      'Tidak ada API Key yang tersedia. Silakan masukkan API Key di Pengaturan atau hubungi administrator.'
+    );
+  }
+
+  /**
+   * Menguji validitas API Key dengan melakukan lightweight ping ke masing-masing provider.
+   */
+  static async testConnection(provider: AIProvider, apiKey: string): Promise<ConnectionTestResult> {
+    if (!apiKey || apiKey.trim().length === 0) {
+      return { success: false, message: 'API key tidak boleh kosong.' };
+    }
+
+    const cleanKey = apiKey.trim();
+
+    try {
+      if (provider === 'gemini') {
+        const genAI = new GoogleGenerativeAI(cleanKey);
+        // Menggunakan model flash/pro untuk test prompt super ringan
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const result = await model.generateContent('Hi');
+        if (result && result.response) {
+          return { success: true, message: 'Koneksi ke Google Gemini berhasil!' };
+        }
+      } else if (provider === 'openai') {
+        const openai = new OpenAI({ apiKey: cleanKey });
+        await openai.models.list();
+        return { success: true, message: 'Koneksi ke OpenAI berhasil!' };
+      } else if (provider === 'claude') {
+        const anthropic = new Anthropic({ apiKey: cleanKey });
+        await anthropic.messages.create({
+          model: 'claude-3-haiku-20240307',
+          max_tokens: 10,
+          messages: [{ role: 'user', content: 'Hi' }],
+        });
+        return { success: true, message: 'Koneksi ke Anthropic Claude berhasil!' };
+      }
+
+      return { success: false, message: 'Provider tidak dikenali.' };
+    } catch (error: any) {
+      const errorMsg = error?.message || String(error);
+      if (errorMsg.includes('API_KEY_INVALID') || errorMsg.includes('Incorrect API key') || errorMsg.includes('401')) {
+        return { success: false, message: 'API Key tidak valid atau telah kedaluwarsa.' };
+      }
+      if (errorMsg.includes('RESOURCE_EXHAUSTED') || errorMsg.includes('429')) {
+        return { success: false, message: 'Batas kuota API (Rate Limit / Quota) terlampaui.' };
+      }
+      return { success: false, message: `Gagal terhubung: ${errorMsg}` };
+    }
+  }
+
   static async generateQuestions(
     request: GenerateQuestionsRequest
   ): Promise<GenerateQuestionsResponse> {
@@ -58,7 +153,8 @@ export class AIService {
   private static async generateWithGemini(prompt: string, apiKey: string): Promise<string> {
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+      // Mendukung model gemini-1.5-flash / gemini-pro
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
       const result = await model.generateContent(prompt);
       return result.response.text();
     } catch (error) {
@@ -90,7 +186,9 @@ Return ONLY valid JSON: {"questions": [{"id": "q1", "text": "...", "type": "mult
 
   private static parseQuestionsJSON(jsonString: string): Question[] {
     try {
-      const parsed = JSON.parse(jsonString);
+      // Membersihkan markdown formatting (```json ... ```) jika dikembalikan oleh AI
+      const cleanJSON = jsonString.replace(/^```json/g, '').replace(/```$/g, '').trim();
+      const parsed = JSON.parse(cleanJSON);
       return (parsed.questions || []).map((q: any, i: number) => ({
         id: q.id || `q${i + 1}`,
         text: q.text || '',
