@@ -1,4 +1,7 @@
 import * as Keychain from 'react-native-keychain';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const AI_CONFIG_KEY = 'edublox_ai_endpoint_config';
 
 export const keyStorageService = {
   /**
@@ -51,5 +54,14 @@ export const keyStorageService = {
     const gemini = await this.getKey('gemini');
     const claude = await this.getKey('claude');
     return !!(openai || gemini || claude);
+  },
+
+  async saveAIConfig(config: { provider: 'openai' | 'gemini' | 'claude'; baseUrl?: string; model?: string }): Promise<void> {
+    await AsyncStorage.setItem(AI_CONFIG_KEY, JSON.stringify(config));
+  },
+
+  async getAIConfig(): Promise<{ provider: 'openai' | 'gemini' | 'claude'; baseUrl?: string; model?: string } | null> {
+    const value = await AsyncStorage.getItem(AI_CONFIG_KEY);
+    return value ? JSON.parse(value) : null;
   }
 };

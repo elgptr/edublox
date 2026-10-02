@@ -78,6 +78,18 @@ export interface AIConfig {
   provider: AIProvider;
   apiKey: string;
   model?: string;
+  baseUrl?: string;
+}
+
+export interface AIKeyConfig {
+  provider: AIProvider;
+  customKey: string | null;
+  useSystemDefault: boolean; // true = pakai Gemini Free dari sistem
+}
+
+export interface ConnectionTestResult {
+  success: boolean;
+  message: string;
 }
 
 export interface GenerateQuestionsRequest {

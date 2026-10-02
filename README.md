@@ -109,7 +109,7 @@ npm run preview   # Preview
 |-------|--------|
 | 1 | ✅ Done |
 | 2 | ✅ Done |
-| 3 | Next |
+| 3 | ? Done |
 | 4 | Then |
 
 ## 📞 Support

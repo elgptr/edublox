@@ -12,6 +12,7 @@ web-build/
 .env
 .env.local
 .env.*.local
+edublox api key.txt
 .DS_Store
 *.log
 npm-debug.log*

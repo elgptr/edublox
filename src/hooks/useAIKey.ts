@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { keyStorageService } from '../services/keyStorageService';
-import { AIService, AIProvider, ActiveKeyResult } from '../services/aiService';
+import { AIService, ActiveKeyResult } from '../services/aiService';
+import type { AIProvider } from '../types';
 
 export const useAIKey = () => {
   const [keys, setKeys] = useState<{ [key: string]: string | null }>({
@@ -50,6 +51,12 @@ export const useAIKey = () => {
     }
   };
 
+  const saveAIConfig = async (config: { provider: AIProvider; baseUrl?: string; model?: string }) => {
+    await keyStorageService.saveAIConfig(config);
+    const resolved = await AIService.getActiveKey(config.provider);
+    setActiveKeyInfo(resolved);
+  };
+
   const removeKey = async (provider: AIProvider) => {
     try {
       await keyStorageService.removeKey(provider);
@@ -74,6 +81,7 @@ export const useAIKey = () => {
     hasAvailableKey: !!activeKeyInfo?.apiKey,
     isLoading,
     saveKey,
+    saveAIConfig,
     removeKey,
     refreshKeys: loadKeys,
     testConnection: AIService.testConnection,

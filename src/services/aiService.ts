@@ -7,19 +7,21 @@ import type {
   GenerateQuestionsResponse,
   Question,
   AppError,
+  AIProvider,
+  ConnectionTestResult,
 } from '../types';
-
-export type AIProvider = 'openai' | 'gemini' | 'claude';
 
 export interface ActiveKeyResult {
   apiKey: string;
   provider: AIProvider;
   isSystemDefault: boolean;
+  baseUrl?: string;
+  model?: string;
 }
 
-export interface ConnectionTestResult {
-  success: boolean;
-  message: string;
+export interface ConnectionOptions {
+  baseUrl?: string;
+  model?: string;
 }
 
 export class AIService {
@@ -28,18 +30,25 @@ export class AIService {
    * 1. Cek Custom Key milik user di local encrypted storage.
    * 2. Jika tidak ada / kosong, otomatis fallback ke EXPO_PUBLIC_SYSTEM_GEMINI_KEY.
    */
-  static async getActiveKey(preferredProvider: AIProvider = 'gemini'): Promise<ActiveKeyResult> {
-    try {
-      const userCustomKey = await keyStorageService.getKey(preferredProvider);
-      if (userCustomKey && userCustomKey.trim().length > 0) {
-        return {
-          apiKey: userCustomKey.trim(),
-          provider: preferredProvider,
-          isSystemDefault: false,
-        };
+  static async getActiveKey(preferredProvider?: AIProvider): Promise<ActiveKeyResult> {
+    const providers: AIProvider[] = preferredProvider
+      ? [preferredProvider, ...(['gemini', 'openai', 'claude'] as AIProvider[]).filter(p => p !== preferredProvider)]
+      : ['gemini', 'openai', 'claude'];
+
+    for (const provider of providers) {
+      try {
+        const userCustomKey = await keyStorageService.getKey(provider);
+        if (userCustomKey && userCustomKey.trim().length > 0) {
+          const config = await keyStorageService.getAIConfig();
+          return {
+            apiKey: userCustomKey.trim(), provider, isSystemDefault: false,
+            baseUrl: config?.provider === provider ? config.baseUrl : undefined,
+            model: config?.provider === provider ? config.model : undefined,
+          };
+        }
+      } catch (e) {
+        console.warn(`Gagal membaca custom key ${provider} dari storage:`, e);
       }
-    } catch (e) {
-      console.warn('Gagal membaca custom key dari storage:', e);
     }
 
     // Fallback ke System Gemini Key
@@ -61,7 +70,7 @@ export class AIService {
   /**
    * Menguji validitas API Key dengan melakukan lightweight ping ke masing-masing provider.
    */
-  static async testConnection(provider: AIProvider, apiKey: string): Promise<ConnectionTestResult> {
+  static async testConnection(provider: AIProvider, apiKey: string, options: ConnectionOptions = {}): Promise<ConnectionTestResult> {
     if (!apiKey || apiKey.trim().length === 0) {
       return { success: false, message: 'API key tidak boleh kosong.' };
     }
@@ -78,8 +87,12 @@ export class AIService {
           return { success: true, message: 'Koneksi ke Google Gemini berhasil!' };
         }
       } else if (provider === 'openai') {
-        const openai = new OpenAI({ apiKey: cleanKey });
-        await openai.models.list();
+        const openai = new OpenAI({ apiKey: cleanKey, ...(options.baseUrl ? { baseURL: options.baseUrl.trim() } : {}) });
+        if (options.model) {
+          await openai.chat.completions.create({ model: options.model.trim(), messages: [{ role: 'user', content: 'Reply with OK.' }], max_tokens: 5 });
+        } else {
+          await openai.models.list();
+        }
         return { success: true, message: 'Koneksi ke OpenAI berhasil!' };
       } else if (provider === 'claude') {
         const anthropic = new Anthropic({ apiKey: cleanKey });
@@ -94,10 +107,11 @@ export class AIService {
       return { success: false, message: 'Provider tidak dikenali.' };
     } catch (error: any) {
       const errorMsg = error?.message || String(error);
-      if (errorMsg.includes('API_KEY_INVALID') || errorMsg.includes('Incorrect API key') || errorMsg.includes('401')) {
+      const status = error?.status || error?.statusCode;
+      if (status === 401 || errorMsg.includes('API_KEY_INVALID') || errorMsg.includes('Incorrect API key') || errorMsg.includes('401')) {
         return { success: false, message: 'API Key tidak valid atau telah kedaluwarsa.' };
       }
-      if (errorMsg.includes('RESOURCE_EXHAUSTED') || errorMsg.includes('429')) {
+      if (status === 429 || errorMsg.includes('RESOURCE_EXHAUSTED') || errorMsg.includes('429')) {
         return { success: false, message: 'Batas kuota API (Rate Limit / Quota) terlampaui.' };
       }
       return { success: false, message: `Gagal terhubung: ${errorMsg}` };
@@ -113,7 +127,7 @@ export class AIService {
 
       switch (request.aiConfig.provider) {
         case 'openai':
-          questionsJSON = await this.generateWithOpenAI(prompt, request.aiConfig.apiKey);
+          questionsJSON = await this.generateWithOpenAI(prompt, request.aiConfig.apiKey, request.aiConfig.baseUrl, request.aiConfig.model);
           break;
         case 'gemini':
           questionsJSON = await this.generateWithGemini(prompt, request.aiConfig.apiKey);
@@ -127,26 +141,26 @@ export class AIService {
 
       const questions = this.parseQuestionsJSON(questionsJSON);
       return { questions, generatedAt: new Date() };
-    } catch (error) {
+    } catch (error: any) {
       const isAppError = (e: unknown): e is AppError => {
         return typeof e === 'object' && e !== null && 'code' in e && 'message' in e;
       };
       if (isAppError(error)) throw error;
-      throw this.createError('GENERATION_ERROR', 'Failed to generate questions');
+      throw this.createError('GENERATION_ERROR', error?.message || 'Failed to generate questions', error?.status ? `HTTP_${error.status}` : undefined);
     }
   }
 
-  private static async generateWithOpenAI(prompt: string, apiKey: string): Promise<string> {
+  private static async generateWithOpenAI(prompt: string, apiKey: string, baseUrl?: string, model?: string): Promise<string> {
     try {
-      const openai = new OpenAI({ apiKey });
+      const openai = new OpenAI({ apiKey, ...(baseUrl ? { baseURL: baseUrl } : {}) });
       const response = await openai.chat.completions.create({
-        model: 'gpt-4-turbo',
+        model: model || 'gpt-4-turbo',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
       });
       return response.choices[0]?.message?.content || '';
-    } catch (error) {
-      throw this.createError('OPENAI_ERROR', 'OpenAI API call failed');
+    } catch (error: any) {
+      throw this.createError('OPENAI_ERROR', error?.message || 'OpenAI API call failed', error?.status ? `HTTP_${error.status}` : undefined);
     }
   }
 
@@ -157,8 +171,8 @@ export class AIService {
       const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
       const result = await model.generateContent(prompt);
       return result.response.text();
-    } catch (error) {
-      throw this.createError('GEMINI_ERROR', 'Gemini API call failed');
+    } catch (error: any) {
+      throw this.createError('GEMINI_ERROR', error?.message || 'Gemini API call failed', error?.status ? `HTTP_${error.status}` : undefined);
     }
   }
 
@@ -172,8 +186,8 @@ export class AIService {
       });
       const content = response.content[0];
       return content.type === 'text' ? content.text : '';
-    } catch (error) {
-      throw this.createError('CLAUDE_ERROR', 'Claude API call failed');
+    } catch (error: any) {
+      throw this.createError('CLAUDE_ERROR', error?.message || 'Claude API call failed', error?.status ? `HTTP_${error.status}` : undefined);
     }
   }
 
