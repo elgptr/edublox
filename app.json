@@ -1,4 +1,11 @@
 {
+  "expo": {
+    "name": "Edublox",
+    "slug": "edublox",
+    "version": "1.0.0",
+    "assetBundlePatterns": ["**/*"],
+    "platforms": ["ios", "android"]
+  },
   "android": {
     "package": "com.anonymous.edublox"
   }
