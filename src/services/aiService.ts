@@ -41,7 +41,9 @@ export class AIService {
         if (userCustomKey && userCustomKey.trim().length > 0) {
           const config = await keyStorageService.getAIConfig();
           return {
-            apiKey: userCustomKey.trim(), provider, isSystemDefault: false,
+            apiKey: userCustomKey.trim(),
+            provider,
+            isSystemDefault: false,
             baseUrl: config?.provider === provider ? config.baseUrl : undefined,
             model: config?.provider === provider ? config.model : undefined,
           };
@@ -70,7 +72,11 @@ export class AIService {
   /**
    * Menguji validitas API Key dengan melakukan lightweight ping ke masing-masing provider.
    */
-  static async testConnection(provider: AIProvider, apiKey: string, options: ConnectionOptions = {}): Promise<ConnectionTestResult> {
+  static async testConnection(
+    provider: AIProvider,
+    apiKey: string,
+    options: ConnectionOptions = {}
+  ): Promise<ConnectionTestResult> {
     if (!apiKey || apiKey.trim().length === 0) {
       return { success: false, message: 'API key tidak boleh kosong.' };
     }
@@ -87,9 +93,16 @@ export class AIService {
           return { success: true, message: 'Koneksi ke Google Gemini berhasil!' };
         }
       } else if (provider === 'openai') {
-        const openai = new OpenAI({ apiKey: cleanKey, ...(options.baseUrl ? { baseURL: options.baseUrl.trim() } : {}) });
+        const openai = new OpenAI({
+          apiKey: cleanKey,
+          ...(options.baseUrl ? { baseURL: options.baseUrl.trim() } : {}),
+        });
         if (options.model) {
-          await openai.chat.completions.create({ model: options.model.trim(), messages: [{ role: 'user', content: 'Reply with OK.' }], max_tokens: 5 });
+          await openai.chat.completions.create({
+            model: options.model.trim(),
+            messages: [{ role: 'user', content: 'Reply with OK.' }],
+            max_tokens: 5,
+          });
         } else {
           await openai.models.list();
         }
@@ -108,7 +121,12 @@ export class AIService {
     } catch (error: any) {
       const errorMsg = error?.message || String(error);
       const status = error?.status || error?.statusCode;
-      if (status === 401 || errorMsg.includes('API_KEY_INVALID') || errorMsg.includes('Incorrect API key') || errorMsg.includes('401')) {
+      if (
+        status === 401 ||
+        errorMsg.includes('API_KEY_INVALID') ||
+        errorMsg.includes('Incorrect API key') ||
+        errorMsg.includes('401')
+      ) {
         return { success: false, message: 'API Key tidak valid atau telah kedaluwarsa.' };
       }
       if (status === 429 || errorMsg.includes('RESOURCE_EXHAUSTED') || errorMsg.includes('429')) {
@@ -127,7 +145,12 @@ export class AIService {
 
       switch (request.aiConfig.provider) {
         case 'openai':
-          questionsJSON = await this.generateWithOpenAI(prompt, request.aiConfig.apiKey, request.aiConfig.baseUrl, request.aiConfig.model);
+          questionsJSON = await this.generateWithOpenAI(
+            prompt,
+            request.aiConfig.apiKey,
+            request.aiConfig.baseUrl,
+            request.aiConfig.model
+          );
           break;
         case 'gemini':
           questionsJSON = await this.generateWithGemini(prompt, request.aiConfig.apiKey);
@@ -146,11 +169,20 @@ export class AIService {
         return typeof e === 'object' && e !== null && 'code' in e && 'message' in e;
       };
       if (isAppError(error)) throw error;
-      throw this.createError('GENERATION_ERROR', error?.message || 'Failed to generate questions', error?.status ? `HTTP_${error.status}` : undefined);
+      throw this.createError(
+        'GENERATION_ERROR',
+        error?.message || 'Failed to generate questions',
+        error?.status ? `HTTP_${error.status}` : undefined
+      );
     }
   }
 
-  private static async generateWithOpenAI(prompt: string, apiKey: string, baseUrl?: string, model?: string): Promise<string> {
+  private static async generateWithOpenAI(
+    prompt: string,
+    apiKey: string,
+    baseUrl?: string,
+    model?: string
+  ): Promise<string> {
     try {
       const openai = new OpenAI({ apiKey, ...(baseUrl ? { baseURL: baseUrl } : {}) });
       const response = await openai.chat.completions.create({
@@ -160,7 +192,11 @@ export class AIService {
       });
       return response.choices[0]?.message?.content || '';
     } catch (error: any) {
-      throw this.createError('OPENAI_ERROR', error?.message || 'OpenAI API call failed', error?.status ? `HTTP_${error.status}` : undefined);
+      throw this.createError(
+        'OPENAI_ERROR',
+        error?.message || 'OpenAI API call failed',
+        error?.status ? `HTTP_${error.status}` : undefined
+      );
     }
   }
 
@@ -172,7 +208,11 @@ export class AIService {
       const result = await model.generateContent(prompt);
       return result.response.text();
     } catch (error: any) {
-      throw this.createError('GEMINI_ERROR', error?.message || 'Gemini API call failed', error?.status ? `HTTP_${error.status}` : undefined);
+      throw this.createError(
+        'GEMINI_ERROR',
+        error?.message || 'Gemini API call failed',
+        error?.status ? `HTTP_${error.status}` : undefined
+      );
     }
   }
 
@@ -187,7 +227,11 @@ export class AIService {
       const content = response.content[0];
       return content.type === 'text' ? content.text : '';
     } catch (error: any) {
-      throw this.createError('CLAUDE_ERROR', error?.message || 'Claude API call failed', error?.status ? `HTTP_${error.status}` : undefined);
+      throw this.createError(
+        'CLAUDE_ERROR',
+        error?.message || 'Claude API call failed',
+        error?.status ? `HTTP_${error.status}` : undefined
+      );
     }
   }
 

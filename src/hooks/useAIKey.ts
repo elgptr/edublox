@@ -78,6 +78,8 @@ export const useAIKey = () => {
     keys,
     activeKeyInfo,
     isUsingSystemKey: activeKeyInfo?.isSystemDefault ?? false,
+    hasCustomKey: !!Object.values(keys).some(k => k && k.trim().length > 0),
+    activeProvider: activeKeyInfo?.provider,
     hasAvailableKey: !!activeKeyInfo?.apiKey,
     isLoading,
     saveKey,
