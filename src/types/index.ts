@@ -76,20 +76,9 @@ export type AIProvider = 'openai' | 'gemini' | 'claude';
 
 export interface AIConfig {
   provider: AIProvider;
-  apiKey: string;
+  apiKey?: string;
   model?: string;
   baseUrl?: string;
-}
-
-export interface AIKeyConfig {
-  provider: AIProvider;
-  customKey: string | null;
-  useSystemDefault: boolean; // true = pakai Gemini Free dari sistem
-}
-
-export interface ConnectionTestResult {
-  success: boolean;
-  message: string;
 }
 
 export interface GenerateQuestionsRequest {
@@ -104,6 +93,11 @@ export interface GenerateQuestionsRequest {
 export interface GenerateQuestionsResponse {
   questions: Question[];
   generatedAt: Date;
+}
+
+export interface ConnectionTestResult {
+  success: boolean;
+  message: string;
 }
 
 // ============ UI Navigation Types ============

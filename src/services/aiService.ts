@@ -143,6 +143,10 @@ export class AIService {
       const prompt = this.buildPrompt(request);
       let questionsJSON: string;
 
+      if (!request.aiConfig.apiKey) {
+        throw this.createError('NO_API_KEY', 'API Key is required');
+      }
+
       switch (request.aiConfig.provider) {
         case 'openai':
           questionsJSON = await this.generateWithOpenAI(
@@ -203,7 +207,6 @@ export class AIService {
   private static async generateWithGemini(prompt: string, apiKey: string): Promise<string> {
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
-      // Mendukung model gemini-1.5-flash / gemini-pro
       const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
       const result = await model.generateContent(prompt);
       return result.response.text();
@@ -237,9 +240,7 @@ export class AIService {
 
   private static buildPrompt(request: GenerateQuestionsRequest): string {
     const semesterText = request.semester === 'I' ? 'Semester Ganjil' : 'Semester Genap';
-    return `Generate ${request.numberOfQuestions} educational questions for Grade ${request.gradeLevel}, ${semesterText}, Book: ${request.bookName}.
-Type: ${request.questionType === 'multiple-choice' ? 'Multiple choice (4 options)' : request.questionType === 'essay' ? 'Essay' : 'Mixed'}.
-Return ONLY valid JSON: {"questions": [{"id": "q1", "text": "...", "type": "multiple-choice", "options": [...], "explanation": "..."}]}`;
+    return `Generate ${request.numberOfQuestions} educational questions for Grade ${request.gradeLevel}, ${semesterText}, Book: ${request.bookName}.\nType: ${request.questionType === 'multiple-choice' ? 'Multiple choice (4 options)' : request.questionType === 'essay' ? 'Essay' : 'Mixed'}.\nReturn ONLY valid JSON: {\"questions\": [{\"id\": \"q1\", \"text\": \"...\", \"type\": \"multiple-choice\", \"options\": [...], \"explanation\": \"...\"}]}`;
   }
 
   private static parseQuestionsJSON(jsonString: string): Question[] {

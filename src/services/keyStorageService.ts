@@ -1,7 +1,12 @@
 import * as Keychain from 'react-native-keychain';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { AIProvider } from '../types';
 
-const AI_CONFIG_KEY = 'edublox_ai_endpoint_config';
+interface AIConfig {
+  provider: AIProvider;
+  baseUrl?: string;
+  model?: string;
+}
 
 export const keyStorageService = {
   /**
@@ -56,12 +61,28 @@ export const keyStorageService = {
     return !!(openai || gemini || claude);
   },
 
-  async saveAIConfig(config: { provider: 'openai' | 'gemini' | 'claude'; baseUrl?: string; model?: string }): Promise<void> {
-    await AsyncStorage.setItem(AI_CONFIG_KEY, JSON.stringify(config));
+  /**
+   * Save AI configuration (provider, baseUrl, model)
+   */
+  async saveAIConfig(config: AIConfig): Promise<void> {
+    try {
+      await AsyncStorage.setItem('edublox_ai_config', JSON.stringify(config));
+    } catch (e) {
+      console.error('Error saving AI config:', e);
+      throw e;
+    }
   },
 
-  async getAIConfig(): Promise<{ provider: 'openai' | 'gemini' | 'claude'; baseUrl?: string; model?: string } | null> {
-    const value = await AsyncStorage.getItem(AI_CONFIG_KEY);
-    return value ? JSON.parse(value) : null;
-  }
+  /**
+   * Get saved AI configuration
+   */
+  async getAIConfig(): Promise<AIConfig | null> {
+    try {
+      const config = await AsyncStorage.getItem('edublox_ai_config');
+      return config ? JSON.parse(config) : null;
+    } catch (e) {
+      console.error('Error retrieving AI config:', e);
+      return null;
+    }
+  },
 };
