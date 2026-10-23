@@ -9,12 +9,12 @@ import {
 import { getFirestore, Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || '',
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || '',
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || '',
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || '',
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || '',
-  appId: process.env.REACT_APP_FIREBASE_APP_ID || '',
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || process.env.REACT_APP_FIREBASE_API_KEY || 'AIzaSyAtFO7ZzGjz2512aiYWa5WzzmsYMkd176A',
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || 'edublox-73d4d.firebaseapp.com',
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || process.env.REACT_APP_FIREBASE_PROJECT_ID || 'edublox-73d4d',
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || 'edublox-73d4d.firebasestorage.app',
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || '383773373748',
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || process.env.REACT_APP_FIREBASE_APP_ID || '1:383773373748:web:2fc28a9204d72779062161',
 };
 
 class FirebaseService {

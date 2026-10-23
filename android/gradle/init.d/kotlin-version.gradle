@@ -1,0 +1,44 @@
+gradle.startParameter.projectProperties.put("kotlin.suppress.diagnostic.AGP_WITH_BUILT_IN_KOTLIN_APPLIED", "true")
+gradle.startParameter.projectProperties.put("kotlin.suppress.diagnostic.AgpWithBuiltInKotlinApplied", "true")
+gradle.startParameter.projectProperties.put("kotlin.suppress.agp.built.in.kotlin.check", "true")
+gradle.startParameter.projectProperties.put("kotlin.suppressAgpWithBuiltInKotlinCheck", "true")
+
+System.setProperty("kotlin.suppress.diagnostic.AGP_WITH_BUILT_IN_KOTLIN_APPLIED", "true")
+System.setProperty("kotlin.suppress.fatal.diagnostics", "AGP_WITH_BUILT_IN_KOTLIN_APPLIED")
+System.setProperty("kotlin.internal.suppress.agp.built.in.kotlin.check", "true")
+
+gradle.settingsEvaluated { settings ->
+  settings.pluginManagement {
+    repositories {
+      google()
+      mavenCentral()
+    }
+    resolutionStrategy {
+      eachPlugin {
+        if (requested.id.id.startsWith('org.jetbrains.kotlin') || requested.id.namespace == 'org.jetbrains.kotlin') {
+          useVersion('2.4.20')
+        }
+      }
+    }
+  }
+}
+
+gradle.allprojects { project ->
+  project.ext.set("kotlin.suppress.agp.built.in.kotlin.check", "true")
+  project.ext.set("kotlin.suppress.diagnostic.AGP_WITH_BUILT_IN_KOTLIN_APPLIED", "true")
+
+  project.buildscript.configurations.configureEach { config ->
+    config.resolutionStrategy.eachDependency { details ->
+      if (details.requested.group == 'org.jetbrains.kotlin') {
+        details.useVersion('2.4.20')
+      }
+    }
+  }
+  project.configurations.configureEach { config ->
+    config.resolutionStrategy.eachDependency { details ->
+      if (details.requested.group == 'org.jetbrains.kotlin') {
+        details.useVersion('2.4.20')
+      }
+    }
+  }
+}

@@ -3,10 +3,25 @@
     "name": "Edublox",
     "slug": "edublox",
     "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/edublox-logo.jpg",
     "assetBundlePatterns": ["**/*"],
-    "platforms": ["ios", "android"]
-  },
-  "android": {
-    "package": "com.anonymous.edublox"
+    "platforms": ["ios", "android", "web"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.edublox"
+    },
+    "android": {
+      "package": "com.anonymous.edublox",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/edublox-logo.jpg",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/edublox-logo.jpg"
+    }
   }
 }

@@ -1,4 +1,15 @@
 pluginManagement {
+  repositories {
+    google()
+    mavenCentral()
+  }
+  resolutionStrategy {
+    eachPlugin {
+      if (requested.id.id.startsWith('org.jetbrains.kotlin') || requested.id.namespace == 'org.jetbrains.kotlin') {
+        useVersion('2.4.20')
+      }
+    }
+  }
   def reactNativeGradlePlugin = new File(
     providers.exec {
       workingDir(rootDir)

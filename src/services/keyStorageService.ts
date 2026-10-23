@@ -1,46 +1,73 @@
+import { Platform } from 'react-native';
 import * as Keychain from 'react-native-keychain';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { SystemAIEndpointConfig } from '../types';
 
 const AI_CONFIG_KEY = 'edublox_ai_endpoint_config';
+const SYSTEM_AI_CONFIG_KEY = 'edublox_system_ai_endpoint_config';
+const WEB_STORAGE_PREFIX = 'edublox_api_key_';
+
+const isWeb = Platform.OS === 'web';
 
 export const keyStorageService = {
   /**
-   * Save an API key securely using the device keychain
-   * @param provider - 'openai', 'gemini', or 'claude'
-   * @param key - The API key string
+   * Save an API key securely (Keychain on iOS/Android, AsyncStorage on Web)
    */
   async saveKey(provider: 'openai' | 'gemini' | 'claude', key: string): Promise<void> {
     try {
-      // Store as username:provider, password:key
+      if (isWeb) {
+        await AsyncStorage.setItem(`${WEB_STORAGE_PREFIX}${provider}`, key);
+        return;
+      }
       await Keychain.setGenericPassword(provider, key, { service: `edublox_${provider}` });
     } catch (e) {
+      if (isWeb) {
+        await AsyncStorage.setItem(`${WEB_STORAGE_PREFIX}${provider}`, key);
+        return;
+      }
       console.error(`Error saving ${provider} key to keychain:`, e);
       throw e;
     }
   },
 
   /**
-   * Retrieve a saved API key from the keychain
-   * @param provider - 'openai', 'gemini', or 'claude'
+   * Retrieve a saved API key (Keychain on iOS/Android, AsyncStorage on Web)
    */
   async getKey(provider: 'openai' | 'gemini' | 'claude'): Promise<string | null> {
     try {
+      if (isWeb) {
+        return await AsyncStorage.getItem(`${WEB_STORAGE_PREFIX}${provider}`);
+      }
       const credentials = await Keychain.getGenericPassword({ service: `edublox_${provider}` });
       return credentials ? credentials.password : null;
     } catch (e) {
+      if (isWeb) {
+        try {
+          return await AsyncStorage.getItem(`${WEB_STORAGE_PREFIX}${provider}`);
+        } catch {
+          return null;
+        }
+      }
       console.error(`Error retrieving ${provider} key from keychain:`, e);
       return null;
     }
   },
 
   /**
-   * Delete a saved API key from the keychain
-   * @param provider - 'openai', 'gemini', or 'claude'
+   * Delete a saved API key
    */
   async removeKey(provider: 'openai' | 'gemini' | 'claude'): Promise<void> {
     try {
+      if (isWeb) {
+        await AsyncStorage.removeItem(`${WEB_STORAGE_PREFIX}${provider}`);
+        return;
+      }
       await Keychain.resetGenericPassword({ service: `edublox_${provider}` });
     } catch (e) {
+      if (isWeb) {
+        await AsyncStorage.removeItem(`${WEB_STORAGE_PREFIX}${provider}`);
+        return;
+      }
       console.error(`Error removing ${provider} key from keychain:`, e);
       throw e;
     }
@@ -61,7 +88,36 @@ export const keyStorageService = {
   },
 
   async getAIConfig(): Promise<{ provider: 'openai' | 'gemini' | 'claude'; baseUrl?: string; model?: string } | null> {
-    const value = await AsyncStorage.getItem(AI_CONFIG_KEY);
-    return value ? JSON.parse(value) : null;
+    try {
+      const value = await AsyncStorage.getItem(AI_CONFIG_KEY);
+      return value ? JSON.parse(value) : null;
+    } catch {
+      return null;
+    }
+  },
+
+  async saveSystemAIConfig(config: SystemAIEndpointConfig): Promise<void> {
+    try {
+      await AsyncStorage.setItem(SYSTEM_AI_CONFIG_KEY, JSON.stringify(config));
+    } catch (e) {
+      console.warn('Gagal menyimpan system AI config ke local storage:', e);
+    }
+  },
+
+  async getSystemAIConfig(): Promise<SystemAIEndpointConfig | null> {
+    try {
+      const value = await AsyncStorage.getItem(SYSTEM_AI_CONFIG_KEY);
+      return value ? JSON.parse(value) : null;
+    } catch {
+      return null;
+    }
+  },
+
+  async removeSystemAIConfig(): Promise<void> {
+    try {
+      await AsyncStorage.removeItem(SYSTEM_AI_CONFIG_KEY);
+    } catch (e) {
+      console.warn('Gagal menghapus system AI config dari local storage:', e);
+    }
   }
 };
