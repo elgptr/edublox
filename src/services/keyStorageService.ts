@@ -3,9 +3,12 @@ import * as Keychain from 'react-native-keychain';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { SystemAIEndpointConfig } from '../types';
 
-const AI_CONFIG_KEY = 'edublox_ai_endpoint_config';
-const SYSTEM_AI_CONFIG_KEY = 'edublox_system_ai_endpoint_config';
-const WEB_STORAGE_PREFIX = 'edublox_api_key_';
+const AI_CONFIG_KEY = 'edunesis_ai_endpoint_config';
+const LEGACY_AI_CONFIG_KEY = 'edublox_ai_endpoint_config';
+const SYSTEM_AI_CONFIG_KEY = 'edunesis_system_ai_endpoint_config';
+const LEGACY_SYSTEM_AI_CONFIG_KEY = 'edublox_system_ai_endpoint_config';
+const WEB_STORAGE_PREFIX = 'edunesis_api_key_';
+const LEGACY_WEB_STORAGE_PREFIX = 'edublox_api_key_';
 
 const isWeb = Platform.OS === 'web';
 
@@ -19,7 +22,7 @@ export const keyStorageService = {
         await AsyncStorage.setItem(`${WEB_STORAGE_PREFIX}${provider}`, key);
         return;
       }
-      await Keychain.setGenericPassword(provider, key, { service: `edublox_${provider}` });
+      await Keychain.setGenericPassword(provider, key, { service: `edunesis_${provider}` });
     } catch (e) {
       if (isWeb) {
         await AsyncStorage.setItem(`${WEB_STORAGE_PREFIX}${provider}`, key);
@@ -36,14 +39,19 @@ export const keyStorageService = {
   async getKey(provider: 'openai' | 'gemini' | 'claude'): Promise<string | null> {
     try {
       if (isWeb) {
-        return await AsyncStorage.getItem(`${WEB_STORAGE_PREFIX}${provider}`);
+        const val = await AsyncStorage.getItem(`${WEB_STORAGE_PREFIX}${provider}`);
+        if (val) return val;
+        return await AsyncStorage.getItem(`${LEGACY_WEB_STORAGE_PREFIX}${provider}`);
       }
-      const credentials = await Keychain.getGenericPassword({ service: `edublox_${provider}` });
+      const credentials = (await Keychain.getGenericPassword({ service: `edunesis_${provider}` }))
+        || (await Keychain.getGenericPassword({ service: `edublox_${provider}` }));
       return credentials ? credentials.password : null;
     } catch (e) {
       if (isWeb) {
         try {
-          return await AsyncStorage.getItem(`${WEB_STORAGE_PREFIX}${provider}`);
+          const val = await AsyncStorage.getItem(`${WEB_STORAGE_PREFIX}${provider}`);
+          if (val) return val;
+          return await AsyncStorage.getItem(`${LEGACY_WEB_STORAGE_PREFIX}${provider}`);
         } catch {
           return null;
         }
@@ -60,12 +68,17 @@ export const keyStorageService = {
     try {
       if (isWeb) {
         await AsyncStorage.removeItem(`${WEB_STORAGE_PREFIX}${provider}`);
+        await AsyncStorage.removeItem(`${LEGACY_WEB_STORAGE_PREFIX}${provider}`);
         return;
       }
-      await Keychain.resetGenericPassword({ service: `edublox_${provider}` });
+      await Keychain.resetGenericPassword({ service: `edunesis_${provider}` });
+      try {
+        await Keychain.resetGenericPassword({ service: `edublox_${provider}` });
+      } catch {}
     } catch (e) {
       if (isWeb) {
         await AsyncStorage.removeItem(`${WEB_STORAGE_PREFIX}${provider}`);
+        await AsyncStorage.removeItem(`${LEGACY_WEB_STORAGE_PREFIX}${provider}`);
         return;
       }
       console.error(`Error removing ${provider} key from keychain:`, e);
@@ -89,7 +102,7 @@ export const keyStorageService = {
 
   async getAIConfig(): Promise<{ provider: 'openai' | 'gemini' | 'claude'; baseUrl?: string; model?: string } | null> {
     try {
-      const value = await AsyncStorage.getItem(AI_CONFIG_KEY);
+      const value = (await AsyncStorage.getItem(AI_CONFIG_KEY)) || (await AsyncStorage.getItem(LEGACY_AI_CONFIG_KEY));
       return value ? JSON.parse(value) : null;
     } catch {
       return null;
@@ -106,7 +119,7 @@ export const keyStorageService = {
 
   async getSystemAIConfig(): Promise<SystemAIEndpointConfig | null> {
     try {
-      const value = await AsyncStorage.getItem(SYSTEM_AI_CONFIG_KEY);
+      const value = (await AsyncStorage.getItem(SYSTEM_AI_CONFIG_KEY)) || (await AsyncStorage.getItem(LEGACY_SYSTEM_AI_CONFIG_KEY));
       return value ? JSON.parse(value) : null;
     } catch {
       return null;
@@ -116,6 +129,7 @@ export const keyStorageService = {
   async removeSystemAIConfig(): Promise<void> {
     try {
       await AsyncStorage.removeItem(SYSTEM_AI_CONFIG_KEY);
+      await AsyncStorage.removeItem(LEGACY_SYSTEM_AI_CONFIG_KEY);
     } catch (e) {
       console.warn('Gagal menghapus system AI config dari local storage:', e);
     }

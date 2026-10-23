@@ -16,7 +16,7 @@ describe('keyStorageService', () => {
   it('should save API key correctly', async () => {
     await keyStorageService.saveKey('openai', 'sk-test-key');
     expect(Keychain.setGenericPassword).toHaveBeenCalledWith('openai', 'sk-test-key', {
-      service: 'edublox_openai',
+      service: 'edunesis_openai',
     });
   });
 
@@ -24,7 +24,7 @@ describe('keyStorageService', () => {
     (Keychain.getGenericPassword as jest.Mock).mockResolvedValue({ password: 'sk-existing-key' });
     const key = await keyStorageService.getKey('gemini');
     
-    expect(Keychain.getGenericPassword).toHaveBeenCalledWith({ service: 'edublox_gemini' });
+    expect(Keychain.getGenericPassword).toHaveBeenCalledWith({ service: 'edunesis_gemini' });
     expect(key).toBe('sk-existing-key');
   });
 

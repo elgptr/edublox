@@ -1,11 +1,11 @@
-# Akun Pengujian Edublox (Test Accounts)
+# Akun Pengujian Edunesis (Test Accounts)
 
 Berikut adalah akun yang sudah dibuat dan aktif di Firebase Authentication & Firestore:
 
 | Tipe Akun | Email | Password | Display Name | Role |
 | :--- | :--- | :--- | :--- | :--- |
-| **Admin** | `admin@edublox.id` | `admin123456` | Administrator Edublox | `admin` |
-| **User Biasa** | `user@edublox.id` | `user123456` | Siswa Edublox | `user` |
+| **Admin** | `admin@edublox.id` | `admin123456` | Administrator Edunesis | `admin` |
+| **User Biasa** | `user@edublox.id` | `user123456` | Siswa Edunesis | `user` |
 
 ---
 

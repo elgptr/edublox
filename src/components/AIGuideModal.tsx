@@ -35,9 +35,9 @@ const AIGuideModal: React.FC<AIGuideModalProps> = ({ provider, onClose }) => {
             },
             {
               number: 3,
-              title: 'Salin & Tempel di Edublox',
+              title: 'Salin & Tempel di Edunesis',
               description:
-                'Setelah key terbuat, salin key tersebut. Kembali ke Edublox dan tempel key ke kolom input, lalu klik "Verifikasi".',
+                'Setelah key terbuat, salin key tersebut. Kembali ke Edunesis dan tempel key ke kolom input, lalu klik "Verifikasi".',
             },
           ],
           note: 'API Key Gemini gratis dan unlimited untuk generasi pertanyaan!',
@@ -62,7 +62,7 @@ const AIGuideModal: React.FC<AIGuideModalProps> = ({ provider, onClose }) => {
               number: 3,
               title: 'Salin & Tempel',
               description:
-                'Salin API key yang baru dibuat. Tempel di Edublox dan verifikasi.',
+                'Salin API key yang baru dibuat. Tempel di Edunesis dan verifikasi.',
             },
           ],
           note: 'Perhatian: OpenAI memerlukan payment method dan memiliki biaya per API call.',
@@ -84,9 +84,9 @@ const AIGuideModal: React.FC<AIGuideModalProps> = ({ provider, onClose }) => {
             },
             {
               number: 3,
-              title: 'Tempel di Edublox',
+              title: 'Tempel di Edunesis',
               description:
-                'Salin key dan tempel ke form Edublox, lalu verifikasi.',
+                'Salin key dan tempel ke form Edunesis, lalu verifikasi.',
             },
           ],
           note: 'Claude adalah AI yang powerful. Setup memerlukan payment method.',

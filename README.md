@@ -1,4 +1,4 @@
-# Edublox - Educational Try Out & Training App
+# Edunesis - Multi-Curriculum AI Assessment & Try Out Platform
 
 A React Native application for Indonesian elementary school (SD) students. Firebase auth, Firestore storage, multi-AI support.
 

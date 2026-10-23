@@ -1,6 +1,6 @@
-# Panduan Menjalankan & Deploy Edublox (Web, Android, iOS)
+# Panduan Menjalankan & Deploy Edunesis (Web, Android, iOS)
 
-Edublox kini telah sepenuhnya disiapkan dan dioptimalkan agar dapat berjalan lintas platform: **Web (Vercel)**, **Android**, dan **iOS**.
+Edunesis kini telah sepenuhnya disiapkan dan dioptimalkan agar dapat berjalan lintas platform: **Web (Vercel)**, **Android**, dan **iOS**.
 
 ---
 
@@ -36,7 +36,7 @@ Aplikasi telah dilengkapi dengan file konfigurasi [`vercel.json`](./vercel.json)
    - `EXPO_PUBLIC_SYSTEM_GEMINI_KEY`
    - `EXPO_PUBLIC_FIREBASE_API_KEY`
    - `EXPO_PUBLIC_FIREBASE_PROJECT_ID`
-6. **Klik "Deploy"**. Dalam ~1 menit, aplikasi Edublox aktif di `https://edublox-xxx.vercel.app`!
+6. **Klik "Deploy"**. Dalam ~1 menit, aplikasi Edunesis aktif di `https://edublox.vercel.app`!
 
 ### Cara Deploy via Vercel CLI:
 ```bash

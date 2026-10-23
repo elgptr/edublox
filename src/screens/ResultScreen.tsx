@@ -57,7 +57,7 @@ export const ResultScreen: React.FC<{ navigation?: any; route?: any }> = ({ navi
           {/* Kibo Mascot Feedback Card */}
           <View style={styles.mascotPraiseBox}>
             <Image
-              source={require('../../assets/edublox-mascot-kibo.png')}
+              source={require('../../assets/edunesis-mascot-kibo.png')}
               style={styles.mascotResultImg}
               resizeMode="contain"
             />

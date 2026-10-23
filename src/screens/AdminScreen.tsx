@@ -96,7 +96,7 @@ export const AdminScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
           {
             id: 'admin_user_id',
             email: 'admin@edublox.id',
-            displayName: 'Administrator Edublox',
+            displayName: 'Administrator Edunesis',
             role: 'admin',
             isSubscribed: true,
             subscriptionPlan: 'Paket Admin Master',
@@ -418,7 +418,7 @@ export const AdminScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
           <View style={styles.headerLeft}>
             <View style={styles.headerBrandRow}>
               <Image
-                source={require('../../assets/edublox-logo.jpg')}
+                source={require('../../assets/edunesis-logo.jpg')}
                 style={styles.adminLogoImg}
                 resizeMode="contain"
               />
@@ -504,7 +504,7 @@ export const AdminScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
                     <Text style={styles.kpiIcon}>👥</Text>
                     <Text style={styles.kpiValue}>{users.length}</Text>
                     <Text style={styles.kpiLabel}>Total Pengguna Terdaftar</Text>
-                    <Text style={styles.kpiSub}>Aktif di ekosistem Edublox</Text>
+                    <Text style={styles.kpiSub}>Aktif di ekosistem Edunesis</Text>
                   </View>
 
                   <View style={styles.kpiCard}>

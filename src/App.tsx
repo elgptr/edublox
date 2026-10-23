@@ -88,7 +88,7 @@ function DesktopHeader({ navigation, route }: any) {
         <View style={headerStyles.inner}>
           {/* Brand Logo */}
           <TouchableOpacity style={headerStyles.brandContainer} onPress={() => navigation.navigate('Try Out')} activeOpacity={0.8}>
-            <Text style={headerStyles.brandTitle}>EDUBLOX</Text>
+            <Text style={headerStyles.brandTitle}>EDUNESIS</Text>
             <View style={headerStyles.aiBadge}>
               <Text style={headerStyles.aiBadgeText}>AI 2.0</Text>
             </View>

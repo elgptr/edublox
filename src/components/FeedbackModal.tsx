@@ -133,7 +133,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ visible, onClose }
             <Text style={styles.icon}>📬</Text>
             <View style={{ flex: 1 }}>
               <Text style={styles.title}>Pusat Bantuan & Kotak Surat</Text>
-              <Text style={styles.subtitle}>Kirim pesan langsung ke Tim Administrator Edublox</Text>
+              <Text style={styles.subtitle}>Kirim pesan langsung ke Tim Administrator Edunesis</Text>
             </View>
             <TouchableOpacity onPress={handleClose} style={styles.closeIconBtn} activeOpacity={0.7}>
               <Text style={styles.closeIconText}>✕</Text>
@@ -174,7 +174,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ visible, onClose }
               </View>
               <Text style={styles.successHeading}>Surat Berhasil Terkirim!</Text>
               <Text style={styles.successSub}>
-                Pesan Anda telah berhasil diterima di sistem Mailbox Administrator Edublox.
+                Pesan Anda telah berhasil diterima di sistem Mailbox Administrator Edunesis.
               </Text>
 
               {/* Bukti Tanda Terima Surat */}

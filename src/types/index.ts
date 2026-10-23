@@ -1,5 +1,5 @@
 /**
- * Types untuk Edublox Application
+ * Types untuk Edunesis Application
  * Platform Asesmen Multi-Jenjang & Multi-Kurikulum Berbasis AI (TK hingga SMA)
  */
 

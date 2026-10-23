@@ -686,13 +686,13 @@ export const SetupScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
           <View style={styles.header}>
             <View style={styles.brandHeroCard}>
               <Image
-                source={require('../../assets/edublox-logo.jpg')}
+                source={require('../../assets/edunesis-logo.jpg')}
                 style={styles.setupLogoImg}
                 resizeMode="contain"
               />
               <View style={styles.setupMascotTag}>
                 <Image
-                  source={require('../../assets/edublox-mascot-kibo.png')}
+                  source={require('../../assets/edunesis-mascot-kibo.png')}
                   style={styles.setupMascotImg}
                   resizeMode="contain"
                 />
@@ -740,7 +740,7 @@ export const SetupScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
               <View>
                 <Text style={styles.aiBannerTitle}>
                   {isUsingSystemKey
-                    ? 'Edublox AI Bawaan (Gratis)'
+                    ? 'Edunesis AI Bawaan (Gratis)'
                     : `API Key Kustom (${activeKeyInfo?.provider?.toUpperCase()})`}
                 </Text>
                 <Text style={styles.aiBannerSub}>AI aktif dan siap menghasilkan soal berkualitas tinggi.</Text>
@@ -1237,7 +1237,7 @@ export const SetupScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
                     </Text>
                     <Text style={[styles.uploadSub, isDraggingOver && styles.uploadSubActive]}>
                       {isDraggingOver
-                        ? 'Lepaskan mouse untuk langsung memproses kisi-kisi dengan AI Edublox'
+                        ? 'Lepaskan mouse untuk langsung memproses kisi-kisi dengan AI Edunesis'
                         : 'Tarik & lepas file langsung ke sini, atau klik tombol di bawah untuk memilih file (JPG, PNG, WEBP, atau Dokumen PDF maks. 10MB)'}
                     </Text>
                     <View style={[styles.uploadActionBtn, isDraggingOver && styles.uploadActionBtnActive]}>
@@ -1455,7 +1455,7 @@ export const SetupScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
         {isDesktop ? (
           <View style={styles.desktopHelperColumn}>
             <View style={styles.helperCard}>
-              <Text style={styles.helperTitle}>🤖 AI Companion Edublox</Text>
+              <Text style={styles.helperTitle}>🤖 AI Companion Edunesis</Text>
               <Text style={styles.helperText}>
                 Sistem AI kami otomatis mereferensikan standar silabus {getCurriculumShortName(curriculum)} untuk jenjang {getGradeDisplay(gradeLevel)}.
               </Text>
@@ -1634,7 +1634,7 @@ export const SetupScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
                 <Text style={[styles.stepText, loadingSeconds >= 2 && styles.stepDone]}>
                   {topicSource === 'kisikisi'
                     ? `Membaca & menganalisis file kisi-kisi guru (${kisiKisiFile?.name || 'dokumen'})...`
-                    : 'Menghubungi Edublox AI...'}
+                    : 'Menghubungi Edunesis AI...'}
                 </Text>
               </View>
 

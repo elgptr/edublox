@@ -91,14 +91,14 @@ export const LoginScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
             {/* Mascot Kibo & Brand Hero Card */}
             <View style={styles.heroMascotCard}>
               <Image
-                source={require('../../assets/edublox-mascot-kibo.png')}
+                source={require('../../assets/edunesis-mascot-kibo.png')}
                 style={styles.heroMascotImg}
                 resizeMode="contain"
               />
               <View style={styles.mascotSpeechContainer}>
                 <View style={styles.badgeRow}>
-                  <Text style={styles.heroBadge}>EDUBLOX AI</Text>
-                  <Text style={styles.subBadge}>Kurikulum Merdeka & K13</Text>
+                  <Text style={styles.heroBadge}>EDUNESIS AI</Text>
+                  <Text style={styles.subBadge}>Multi-Jenjang (TK - SMA)</Text>
                 </View>
                 <Text style={styles.mascotGreeting}>"Halo Sahabat Juara! Aku Kibo 🤖"</Text>
                 <Text style={styles.mascotSubGreeting}>
@@ -107,7 +107,7 @@ export const LoginScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
               </View>
             </View>
 
-            <Text style={styles.heroHeading}>Belajar & Latihan Try Out Interaktif Tingkat SD/MI</Text>
+            <Text style={styles.heroHeading}>Belajar & Latihan Try Out Interaktif TK hingga SMA</Text>
             <Text style={styles.heroSub}>
               Tingkatkan pemahaman materi belajar dengan soal-soal berkualitas yang dirumuskan secara presisi oleh kecerdasan buatan.
             </Text>
@@ -169,14 +169,14 @@ export const LoginScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
           {!isDesktop ? (
             <View style={styles.mobileHeroHeader}>
               <Image
-                source={require('../../assets/edublox-mascot-kibo.png')}
+                source={require('../../assets/edunesis-mascot-kibo.png')}
                 style={styles.mobileHeroImg}
                 resizeMode="contain"
               />
               <View style={styles.mobileGreetingBox}>
                 <View style={styles.badgeRow}>
-                  <Text style={styles.heroBadge}>EDUBLOX AI</Text>
-                  <Text style={styles.subBadge}>Kurikulum Merdeka</Text>
+                  <Text style={styles.heroBadge}>EDUNESIS AI</Text>
+                  <Text style={styles.subBadge}>Multi-Jenjang (TK - SMA)</Text>
                 </View>
                 <Text style={styles.mobileTitle}>Latihan Try Out Cerdas</Text>
                 <Text style={styles.mobileSub}>Belajar interaktif bersama Kibo & AI</Text>
@@ -188,7 +188,7 @@ export const LoginScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
             {/* Top Brand Logo inside Login Card */}
             <View style={styles.cardLogoRow}>
               <Image
-                source={require('../../assets/edublox-logo.jpg')}
+                source={require('../../assets/edunesis-logo.jpg')}
                 style={styles.cardLogoImg}
                 resizeMode="contain"
               />
@@ -263,7 +263,7 @@ export const LoginScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
                 {loading ? (
                   <ActivityIndicator color="#ffffff" size="small" />
                 ) : (
-                  <Text style={styles.btnText}>{mode === 'login' ? 'Masuk ke Edublox' : 'Buat Akun Gratis'}</Text>
+                  <Text style={styles.btnText}>{mode === 'login' ? 'Masuk ke Edunesis' : 'Buat Akun Gratis'}</Text>
                 )}
               </TouchableOpacity>
 

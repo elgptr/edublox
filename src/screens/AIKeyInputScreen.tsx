@@ -184,7 +184,7 @@ export const AIKeyInputScreen = ({ navigation }: any) => {
           <View style={styles.statusHeader}>
             <View style={styles.statusDot} />
             <Text style={styles.statusTitle}>
-              Status AI: <Text style={styles.bold}>{isUsingSystemKey ? "Edublox AI Bawaan (Aktif)" : (activeKeyInfo?.provider?.toUpperCase() || "GEMINI")}</Text>
+              Status AI: <Text style={styles.bold}>{isUsingSystemKey ? "Edunesis AI Bawaan (Aktif)" : (activeKeyInfo?.provider?.toUpperCase() || "GEMINI")}</Text>
             </Text>
           </View>
           <Text style={styles.statusKeyInfo}>
@@ -274,7 +274,7 @@ export const AIKeyInputScreen = ({ navigation }: any) => {
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Keunggulan Mode Sistem</Text>
             <View style={styles.bulletList}>
-              <Text style={styles.bulletItem}>• Bebas biaya langganan — disediakan langsung oleh Edublox.</Text>
+              <Text style={styles.bulletItem}>• Bebas biaya langganan — disediakan langsung oleh Edunesis.</Text>
               <Text style={styles.bulletItem}>• Menggunakan AI berkecepatan tinggi yang dioptimalkan untuk kurikulum sekolah.</Text>
               <Text style={styles.bulletItem}>• Sistem terenkripsi dan siap melayani pembuatan soal kapan saja.</Text>
             </View>
@@ -446,7 +446,7 @@ export const AIKeyInputScreen = ({ navigation }: any) => {
             <View style={{ flex: 1 }}>
               <Text style={styles.sectionTitle}>Pusat Bantuan & Kotak Surat</Text>
               <Text style={styles.helpSubtitle}>
-                Butuh bantuan, punya saran perbaikan, kendala teknis, atau ingin melaporkan soal? Kirim surat ke Administrator Edublox dan pantau status surat serta balasannya langsung di sini.
+                Butuh bantuan, punya saran perbaikan, kendala teknis, atau ingin melaporkan soal? Kirim surat ke Administrator Edunesis dan pantau status surat serta balasannya langsung di sini.
               </Text>
             </View>
           </View>

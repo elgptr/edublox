@@ -1,7 +1,7 @@
 {
-  "name": "edublox",
+  "name": "edunesis",
   "version": "1.0.0",
-  "description": "Educational Try Out & Training App",
+  "description": "Edunesis - Platform Asesmen & Ujian Try Out Multi-Kurikulum Berbasis AI",
   "main": "index.js",
   "scripts": {
     "start": "expo start --port 8088",

@@ -25,7 +25,8 @@ export const PREMIUM_LIMITS = {
   maxQuestionsPerExam: 20,
 };
 
-const QUOTA_STORAGE_PREFIX = '@edublox_quota_';
+const QUOTA_STORAGE_PREFIX = '@edunesis_quota_';
+const LEGACY_QUOTA_STORAGE_PREFIX = '@edublox_quota_';
 
 export class QuotaService {
   private static getTodayDateString(): string {
@@ -45,7 +46,10 @@ export class QuotaService {
     const key = this.getStorageKey(userId);
 
     try {
-      const stored = await AsyncStorage.getItem(key);
+      let stored = await AsyncStorage.getItem(key);
+      if (!stored) {
+        stored = await AsyncStorage.getItem(`${LEGACY_QUOTA_STORAGE_PREFIX}${userId}`);
+      }
       if (stored) {
         const data: UserQuota = JSON.parse(stored);
 

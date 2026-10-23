@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Edublox",
-    "slug": "edublox",
+    "name": "Edunesis",
+    "slug": "edunesis",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "icon": "./assets/edublox-logo.jpg",
+    "icon": "./assets/edunesis-logo.jpg",
     "assetBundlePatterns": ["**/*"],
     "platforms": ["ios", "android", "web"],
     "ios": {
@@ -15,13 +15,13 @@
     "android": {
       "package": "com.anonymous.edublox",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/edublox-logo.jpg",
+        "foregroundImage": "./assets/edunesis-logo.jpg",
         "backgroundColor": "#ffffff"
       }
     },
     "web": {
       "bundler": "metro",
-      "favicon": "./assets/edublox-logo.jpg"
+      "favicon": "./assets/edunesis-logo.jpg"
     }
   }
 }

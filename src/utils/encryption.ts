@@ -11,9 +11,10 @@ import type { AppError } from '../types';
 const isWeb = Platform.OS === 'web';
 
 export class EncryptionService {
-  private static readonly SERVICE_NAME = 'edublox-ai-keys';
+  private static readonly SERVICE_NAME = 'edunesis-ai-keys';
   private static readonly ACCOUNT_PREFIX = 'ai_key_';
-  private static readonly WEB_PREFIX = 'edublox_sec_key_';
+  private static readonly WEB_PREFIX = 'edunesis_sec_key_';
+  private static readonly LEGACY_WEB_PREFIX = 'edublox_sec_key_';
 
   /**
    * Simpan API key terenkripsi di secure storage
@@ -44,7 +45,9 @@ export class EncryptionService {
   static async getAPIKey(provider: string): Promise<string | null> {
     try {
       if (isWeb || !Keychain.getGenericPassword) {
-        return await AsyncStorage.getItem(`${this.WEB_PREFIX}${provider}`);
+        const val = await AsyncStorage.getItem(`${this.WEB_PREFIX}${provider}`);
+        if (val) return val;
+        return await AsyncStorage.getItem(`${this.LEGACY_WEB_PREFIX}${provider}`);
       }
       const account = `${this.ACCOUNT_PREFIX}${provider}`;
       const credentials = await Keychain.getGenericPassword({
