@@ -6,5 +6,10 @@ ios
 .env
 .env.local
 .env.*.local
+.env.production
+.env.production.local
 edublox api key.txt
+edunesis api key.txt
+*api key*.txt
+*apikey*.txt
 *.log
