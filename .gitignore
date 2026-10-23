@@ -26,6 +26,9 @@ web-build/
 *.mobileprovision
 *.orig.*
 edublox api key.txt
+edunesis api key.txt
+*api key*.txt
+*apikey*.txt
 *.pem
 *.key.pub
 

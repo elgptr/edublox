@@ -11,16 +11,19 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { useAIKey } from "../hooks/useAIKey";
+import { useAuth } from "../hooks/useAuth";
 import type { AIProvider } from "../types";
 import { AIService } from "../services/aiService";
 import * as Clipboard from "expo-clipboard";
 import AIGuideModal from "../components/AIGuideModal";
 import { FeedbackModal } from "../components/FeedbackModal";
+import { validatePasswordChangeInput, mapFirebaseAuthError } from "../utils/passwordValidation";
 
 export const AIKeyInputScreen = ({ navigation }: any) => {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
 
+  const { currentUser, isAdmin, changePassword, sendPasswordReset } = useAuth();
   const { keys, saveKey, saveAIConfig, removeKey, activeKeyInfo, isLoading, isUsingSystemKey } = useAIKey();
   const [mode, setMode] = useState<"system" | "custom">("system");
   const [provider, setProvider] = useState<AIProvider>("gemini");
@@ -32,6 +35,18 @@ export const AIKeyInputScreen = ({ navigation }: any) => {
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [feedbackVisible, setFeedbackVisible] = useState(false);
+
+  // Password Change states (User & Admin)
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPasswords, setShowPasswords] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [isSendingResetEmail, setIsSendingResetEmail] = useState(false);
+  const [passwordStatus, setPasswordStatus] = useState<{
+    type: "idle" | "success" | "error";
+    message?: string;
+  }>({ type: "idle" });
 
   // Inline feedback states
   const [testResult, setTestResult] = useState<{ status: "idle" | "testing" | "success" | "error"; message?: string }>({
@@ -155,6 +170,57 @@ export const AIKeyInputScreen = ({ navigation }: any) => {
     }
   };
 
+  const handleChangePassword = async () => {
+    setPasswordStatus({ type: "idle" });
+    const validation = validatePasswordChangeInput(currentPassword, newPassword, confirmPassword);
+    if (!validation.valid) {
+      setPasswordStatus({ type: "error", message: validation.error });
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      await changePassword(currentPassword, newPassword);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setPasswordStatus({
+        type: "success",
+        message: "Kata sandi berhasil diperbarui! Gunakan kata sandi baru saat login berikutnya.",
+      });
+    } catch (err: any) {
+      setPasswordStatus({
+        type: "error",
+        message: mapFirebaseAuthError(err),
+      });
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const handleSendResetToMyEmail = async () => {
+    if (!currentUser?.email) {
+      setPasswordStatus({ type: "error", message: "Email akun tidak ditemukan." });
+      return;
+    }
+    setIsSendingResetEmail(true);
+    setPasswordStatus({ type: "idle" });
+    try {
+      await sendPasswordReset(currentUser.email);
+      setPasswordStatus({
+        type: "success",
+        message: `Tautan reset kata sandi telah dikirim ke ${currentUser.email}. Periksa kotak masuk atau folder spam Anda.`,
+      });
+    } catch (err: any) {
+      setPasswordStatus({
+        type: "error",
+        message: mapFirebaseAuthError(err),
+      });
+    } finally {
+      setIsSendingResetEmail(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <View style={styles.center}>
@@ -173,9 +239,9 @@ export const AIKeyInputScreen = ({ navigation }: any) => {
       <View style={[styles.contentWrapper, isDesktop && styles.desktopWrapper]}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Konfigurasi AI Provider</Text>
+          <Text style={styles.title}>Konfigurasi, Keamanan & Bantuan</Text>
           <Text style={styles.subtitle}>
-            Kelola model kecerdasan buatan untuk membuat soal latihan, evaluasi, dan pembahasan otomatis.
+            Kelola model kecerdasan buatan, kata sandi akun, dan layanan bantuan pengguna Edunesis.
           </Text>
         </View>
 
@@ -437,6 +503,127 @@ export const AIKeyInputScreen = ({ navigation }: any) => {
           </View>
         )}
 
+        {/* Keamanan Akun & Ganti Kata Sandi (Untuk User & Admin) */}
+        <View style={styles.card}>
+          <View style={styles.securityHeaderRow}>
+            <View style={styles.securityIconCircle}>
+              <Text style={{ fontSize: 22 }}>🔒</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={styles.accountBadgeRow}>
+                <Text style={styles.sectionTitleNoMargin}>Keamanan Akun & Ganti Kata Sandi</Text>
+                <View style={[styles.roleBadge, isAdmin ? styles.roleBadgeAdmin : styles.roleBadgeUser]}>
+                  <Text style={[styles.roleBadgeText, isAdmin ? styles.roleBadgeTextAdmin : styles.roleBadgeTextUser]}>
+                    {isAdmin ? "🛡️ ADMIN" : "👤 SISWA"}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.helpSubtitle}>
+                Akun aktif: <Text style={{ fontWeight: "700", color: "#0f172a" }}>{currentUser?.email || "-"}</Text>
+              </Text>
+            </View>
+          </View>
+
+          {passwordStatus.type !== "idle" ? (
+            <View
+              style={[
+                styles.testResultBanner,
+                passwordStatus.type === "success" ? styles.testResultSuccess : styles.testResultError,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.testResultText,
+                  passwordStatus.type === "success" ? styles.testSuccessText : styles.testErrorText,
+                ]}
+              >
+                {passwordStatus.type === "success" ? "✅ " : "⚠️ "}
+                {passwordStatus.message}
+              </Text>
+            </View>
+          ) : null}
+
+          <View style={styles.inputGroup}>
+            <View style={styles.inputLabelRow}>
+              <Text style={styles.inputLabel}>Kata Sandi Saat Ini</Text>
+              <TouchableOpacity onPress={() => setShowPasswords(!showPasswords)}>
+                <Text style={styles.guideLink}>{showPasswords ? "🙈 Sembunyikan" : "👁️ Tampilkan Sandi"}</Text>
+              </TouchableOpacity>
+            </View>
+            <TextInput
+              style={styles.input}
+              placeholder="Masukkan kata sandi saat ini..."
+              placeholderTextColor="#94a3b8"
+              secureTextEntry={!showPasswords}
+              value={currentPassword}
+              onChangeText={(v) => {
+                setCurrentPassword(v);
+                if (passwordStatus.type !== "idle") setPasswordStatus({ type: "idle" });
+              }}
+              autoCapitalize="none"
+              editable={!isChangingPassword}
+            />
+
+            <Text style={styles.inputLabel}>Kata Sandi Baru</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Minimal 6 karakter..."
+              placeholderTextColor="#94a3b8"
+              secureTextEntry={!showPasswords}
+              value={newPassword}
+              onChangeText={(v) => {
+                setNewPassword(v);
+                if (passwordStatus.type !== "idle") setPasswordStatus({ type: "idle" });
+              }}
+              autoCapitalize="none"
+              editable={!isChangingPassword}
+            />
+
+            <Text style={styles.inputLabel}>Konfirmasi Kata Sandi Baru</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ulangi kata sandi baru..."
+              placeholderTextColor="#94a3b8"
+              secureTextEntry={!showPasswords}
+              value={confirmPassword}
+              onChangeText={(v) => {
+                setConfirmPassword(v);
+                if (passwordStatus.type !== "idle") setPasswordStatus({ type: "idle" });
+              }}
+              autoCapitalize="none"
+              editable={!isChangingPassword}
+            />
+          </View>
+
+          <View style={[styles.bottomActions, isDesktop && styles.desktopBottomActions]}>
+            <TouchableOpacity
+              style={[styles.saveBtn, { flex: 1.3 }, isChangingPassword && { opacity: 0.6 }]}
+              onPress={handleChangePassword}
+              disabled={isChangingPassword || isSendingResetEmail}
+              activeOpacity={0.8}
+            >
+              {isChangingPassword ? (
+                <ActivityIndicator color="#ffffff" size="small" />
+              ) : (
+                <Text style={styles.saveBtnText}>🔑 Perbarui Kata Sandi</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.testBtn, { flex: 1 }, isSendingResetEmail && { opacity: 0.6 }]}
+              onPress={handleSendResetToMyEmail}
+              disabled={isChangingPassword || isSendingResetEmail}
+              activeOpacity={0.8}
+            >
+              {isSendingResetEmail ? (
+                <ActivityIndicator color="#1e40af" size="small" />
+              ) : (
+                <Text style={styles.testBtnText}>📧 Kirim Link Reset ke Email</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Pusat Bantuan & Kotak Surat Administrator (Digabung di Konfigurasi) */}
         <View style={styles.card}>
           <View style={styles.helpHeaderRow}>
@@ -534,6 +721,54 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   sectionTitle: { fontSize: 16, fontWeight: "800", color: "#0f172a", marginBottom: 14 },
+  sectionTitleNoMargin: { fontSize: 16, fontWeight: "800", color: "#0f172a" },
+
+  securityHeaderRow: {
+    flexDirection: "row",
+    gap: 14,
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  securityIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#f1f5f9",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  accountBadgeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  roleBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  roleBadgeAdmin: {
+    backgroundColor: "#fef2f2",
+    borderColor: "#fecaca",
+  },
+  roleBadgeUser: {
+    backgroundColor: "#eff6ff",
+    borderColor: "#bfdbfe",
+  },
+  roleBadgeText: {
+    fontSize: 11,
+    fontWeight: "800",
+  },
+  roleBadgeTextAdmin: {
+    color: "#dc2626",
+  },
+  roleBadgeTextUser: {
+    color: "#2563eb",
+  },
 
   modeRow: { gap: 12 },
   desktopModeRow: { flexDirection: "row" },

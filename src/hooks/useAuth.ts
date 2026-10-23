@@ -30,7 +30,11 @@ export const useAuth = () => {
 
       if (user) {
         const emailLower = user.email?.toLowerCase() || '';
-        if (emailLower === 'admin@edublox.id' || emailLower.startsWith('admin')) {
+        if (
+          emailLower === 'admin@edunesis.com' ||
+          emailLower === 'admin@edublox.id' ||
+          emailLower.startsWith('admin')
+        ) {
           adminFlag = true;
           role = 'admin';
         } else {
@@ -91,10 +95,20 @@ export const useAuth = () => {
     }
   };
 
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    await firebaseService.changePassword(currentPassword, newPassword);
+  };
+
+  const sendPasswordReset = async (email: string) => {
+    await firebaseService.sendPasswordReset(email);
+  };
+
   return {
     ...state,
     login,
     signup,
     logout,
+    changePassword,
+    sendPasswordReset,
   };
 };

@@ -17,7 +17,7 @@ export const LoginScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
   const { width } = useWindowDimensions();
   const isDesktop = width >= 860;
 
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -75,10 +75,30 @@ export const LoginScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      setError('Masukkan alamat email Anda terlebih dahulu.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    setSuccessMsg('');
+    try {
+      await firebaseService.sendPasswordReset(email.trim());
+      setSuccessMsg(`Tautan reset kata sandi telah dikirim ke ${email.trim()}. Silakan periksa kotak masuk / spam email Anda.`);
+      setMode('login');
+    } catch (err: any) {
+      setError(err.message || 'Gagal mengirim email reset kata sandi. Pastikan email terdaftar.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fillQuickAccount = (quickEmail: string, quickPass: string) => {
     setEmail(quickEmail);
     setPassword(quickPass);
     setError('');
+    setSuccessMsg('');
     setMode('login');
   };
 
@@ -100,7 +120,7 @@ export const LoginScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
                   <Text style={styles.heroBadge}>EDUNESIS AI</Text>
                   <Text style={styles.subBadge}>Multi-Jenjang (TK - SMA)</Text>
                 </View>
-                <Text style={styles.mascotGreeting}>"Halo Sahabat Juara! Aku Kibo 🤖"</Text>
+                <Text style={styles.mascotGreeting}>"Halo Sahabat Juara! Aku KiboSmart 🤖"</Text>
                 <Text style={styles.mascotSubGreeting}>
                   Yuk mulai latihan try out seru, asah nalar berpikir, dan taklukkan materi ujian bersama kecerdasan buatan. Belajar jadi lebih cerdas dan berprestasi!
                 </Text>
@@ -144,20 +164,20 @@ export const LoginScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
               <View style={styles.quickRow}>
                 <TouchableOpacity
                   style={styles.quickBtn}
-                  onPress={() => fillQuickAccount('admin@edublox.id', 'admin123456')}
+                  onPress={() => fillQuickAccount('admin@edunesis.com', 'admin123456')}
                   activeOpacity={0.7}
                 >
                   <Text style={styles.quickBtnText}>🛡️ Akun Admin</Text>
-                  <Text style={styles.quickSub}>admin@edublox.id</Text>
+                  <Text style={styles.quickSub}>admin@edunesis.com</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={styles.quickBtn}
-                  onPress={() => fillQuickAccount('user@edublox.id', 'user123456')}
+                  onPress={() => fillQuickAccount('user@edunesis.com', 'user123456')}
                   activeOpacity={0.7}
                 >
                   <Text style={styles.quickBtnText}>👤 Akun Siswa</Text>
-                  <Text style={styles.quickSub}>user@edublox.id</Text>
+                  <Text style={styles.quickSub}>user@edunesis.com</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -240,32 +260,56 @@ export const LoginScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
                 />
               </View>
 
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Kata Sandi</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Minimal 6 karakter"
-                  placeholderTextColor="#94a3b8"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  editable={!loading}
-                />
-              </View>
+              {mode !== 'forgot' && (
+                <View style={styles.inputGroup}>
+                  <View style={styles.labelRow}>
+                    <Text style={styles.inputLabel}>Kata Sandi</Text>
+                    {mode === 'login' && (
+                      <TouchableOpacity onPress={() => { setMode('forgot'); setError(''); setSuccessMsg(''); }}>
+                        <Text style={styles.forgotLink}>Lupa Kata Sandi?</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Minimal 6 karakter"
+                    placeholderTextColor="#94a3b8"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    autoCapitalize="none"
+                    editable={!loading}
+                  />
+                </View>
+              )}
 
               <TouchableOpacity
                 style={[styles.btn, loading && styles.btnDis]}
-                onPress={mode === 'login' ? handleLogin : handleSignup}
+                onPress={mode === 'login' ? handleLogin : mode === 'signup' ? handleSignup : handleForgotPassword}
                 disabled={loading}
                 activeOpacity={0.8}
               >
                 {loading ? (
                   <ActivityIndicator color="#ffffff" size="small" />
                 ) : (
-                  <Text style={styles.btnText}>{mode === 'login' ? 'Masuk ke Edunesis' : 'Buat Akun Gratis'}</Text>
+                  <Text style={styles.btnText}>
+                    {mode === 'login'
+                      ? 'Masuk ke Edunesis'
+                      : mode === 'signup'
+                      ? 'Buat Akun Gratis'
+                      : 'Kirim Link Reset Kata Sandi'}
+                  </Text>
                 )}
               </TouchableOpacity>
+
+              {mode === 'forgot' && (
+                <TouchableOpacity
+                  style={styles.backToLoginBtn}
+                  onPress={() => { setMode('login'); setError(''); setSuccessMsg(''); }}
+                >
+                  <Text style={styles.link}>← Kembali ke Halaman Masuk</Text>
+                </TouchableOpacity>
+              )}
 
               {/* Mobile Quick Test Accounts */}
               {!isDesktop ? (
@@ -274,13 +318,13 @@ export const LoginScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
                   <View style={{ flexDirection: 'row', gap: 8, marginTop: 6 }}>
                     <TouchableOpacity
                       style={[styles.quickBtn, { flex: 1 }]}
-                      onPress={() => fillQuickAccount('admin@edublox.id', 'admin123456')}
+                      onPress={() => fillQuickAccount('admin@edunesis.com', 'admin123456')}
                     >
                       <Text style={styles.quickBtnText}>🛡️ Admin</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={[styles.quickBtn, { flex: 1 }]}
-                      onPress={() => fillQuickAccount('user@edublox.id', 'user123456')}
+                      onPress={() => fillQuickAccount('user@edunesis.com', 'user123456')}
                     >
                       <Text style={styles.quickBtnText}>👤 Siswa</Text>
                     </TouchableOpacity>
@@ -430,11 +474,14 @@ const styles = StyleSheet.create({
 
   form: { gap: 14 },
   inputGroup: { gap: 6 },
+  labelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   inputLabel: { fontSize: 13, fontWeight: '700', color: '#334155' },
+  forgotLink: { fontSize: 12, fontWeight: '700', color: '#2563eb' },
   input: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 10, padding: 13, fontSize: 14, color: '#0f172a' },
   btn: { backgroundColor: '#2563eb', paddingVertical: 14, borderRadius: 10, alignItems: 'center', marginTop: 8 },
   btnDis: { opacity: 0.6 },
   btnText: { color: '#ffffff', fontSize: 15, fontWeight: '800' },
+  backToLoginBtn: { alignItems: 'center', paddingVertical: 6 },
 
   mobileQuickBox: { marginTop: 14, padding: 12, backgroundColor: '#f8fafc', borderRadius: 10, borderWidth: 1, borderColor: '#e2e8f0' },
   foot: { color: '#64748b', fontSize: 13, textAlign: 'center', marginTop: 10 },

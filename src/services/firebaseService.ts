@@ -5,6 +5,10 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
 
@@ -79,7 +83,22 @@ class FirebaseService {
   getCurrentUser() {
     return this.auth?.currentUser || null;
   }
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    if (!this.auth) throw new Error('Firebase belum terinisialisasi.');
+    const user = this.auth.currentUser;
+    if (!user || !user.email) {
+      throw new Error('Tidak ada pengguna yang sedang login.');
+    }
+    const credential = EmailAuthProvider.credential(user.email, currentPassword);
+    await reauthenticateWithCredential(user, credential);
+    await updatePassword(user, newPassword);
+  }
+
+  async sendPasswordReset(email: string): Promise<void> {
+    if (!this.auth) throw new Error('Firebase belum terinisialisasi.');
+    await sendPasswordResetEmail(this.auth, email.trim());
+  }
 }
 
 export default FirebaseService.getInstance();
-

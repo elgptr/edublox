@@ -71,7 +71,7 @@ export const ResultScreen: React.FC<{ navigation?: any; route?: any }> = ({ navi
               </Text>
               <Text style={styles.mascotPraiseSub}>
                 {result.score >= 70
-                  ? 'Kibo sangat bangga dengan usahamu. Pertahankan prestasimu di ujian sesungguhnya!'
+                  ? 'KiboSmart sangat bangga dengan usahamu. Pertahankan prestasimu di ujian sesungguhnya!'
                   : 'Jangan berkecil hati ya! Kibo siap mendampingimu mengulang materi sampai paham tuntas.'}
               </Text>
             </View>

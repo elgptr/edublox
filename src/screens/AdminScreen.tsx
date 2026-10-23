@@ -25,7 +25,7 @@ export const AdminScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
   const { width } = useWindowDimensions();
   const isDesktop = width >= 860;
 
-  const { currentUser, isAdmin } = useAuth();
+  const { currentUser, isAdmin, sendPasswordReset } = useAuth();
 
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [loading, setLoading] = useState(true);
@@ -95,7 +95,7 @@ export const AdminScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
         setUsers([
           {
             id: 'admin_user_id',
-            email: 'admin@edublox.id',
+            email: 'admin@edunesis.com',
             displayName: 'Administrator Edunesis',
             role: 'admin',
             isSubscribed: true,
@@ -105,7 +105,7 @@ export const AdminScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
           },
           {
             id: 'user_test_id',
-            email: 'user@edublox.id',
+            email: 'user@edunesis.com',
             displayName: 'Siswa Percobaan',
             role: 'user',
             isSubscribed: false,
@@ -153,6 +153,37 @@ export const AdminScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
             }
           },
         },
+      ]
+    );
+  };
+
+  // Handler: Kirim Email Reset Kata Sandi ke User
+  const handleSendResetPassword = (user: User) => {
+    const executeReset = async () => {
+      try {
+        await sendPasswordReset(user.email);
+        if (typeof window !== 'undefined' && typeof (window as any).alert === 'function') {
+          (window as any).alert(`✅ Link reset kata sandi telah dikirim ke email ${user.email}.`);
+        } else {
+          Alert.alert('Email Terkirim! 📧', `Tautan reset kata sandi telah dikirim ke ${user.email}.`);
+        }
+      } catch (e: any) {
+        Alert.alert('Gagal Mengirim Reset', e?.message || 'Pastikan email terdaftar di Firebase Authentication.');
+      }
+    };
+
+    if (typeof window !== 'undefined' && typeof (window as any).confirm === 'function') {
+      const ok = (window as any).confirm(`Kirim email tautan Reset Kata Sandi ke ${user.email}?`);
+      if (ok) executeReset();
+      return;
+    }
+
+    Alert.alert(
+      'Reset Kata Sandi User',
+      `Kirimkan email tautan Reset Kata Sandi ke ${user.email}?`,
+      [
+        { text: 'Batal', style: 'cancel' },
+        { text: 'Kirim Link Reset 🔑', onPress: executeReset },
       ]
     );
   };
@@ -322,11 +353,11 @@ export const AdminScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
         apiKey: aiApiKey.trim(),
         model: aiModel.trim() || 'claude-3-7-sonnet-latest',
         updatedAt: new Date(),
-        updatedBy: currentUser?.email || 'admin@edublox.id',
+        updatedBy: currentUser?.email || 'admin@edunesis.com',
       };
 
       // 1. Simpan ke Firestore
-      await firestoreService.saveSystemAIConfig(config, currentUser?.email || 'admin@edublox.id');
+      await firestoreService.saveSystemAIConfig(config, currentUser?.email || 'admin@edunesis.com');
 
       // 2. Simpan cache lokal
       await keyStorageService.saveSystemAIConfig(config);
@@ -359,9 +390,9 @@ export const AdminScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
                 apiKey: '',
                 model: 'gemini-flash-latest',
                 updatedAt: new Date(),
-                updatedBy: currentUser?.email || 'admin@edublox.id',
+                updatedBy: currentUser?.email || 'admin@edunesis.com',
               };
-              await firestoreService.saveSystemAIConfig(resetConfig, currentUser?.email || 'admin@edublox.id');
+              await firestoreService.saveSystemAIConfig(resetConfig, currentUser?.email || 'admin@edunesis.com');
               await keyStorageService.removeSystemAIConfig();
               setAiEnabled(false);
               setAiTestResult(null);
@@ -431,9 +462,18 @@ export const AdminScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
               Kelola seluruh pengguna, kuota langganan, pemberian diskon, dan respons keluhan dari user.
             </Text>
           </View>
-          <TouchableOpacity style={styles.refreshBtn} onPress={loadAdminData} activeOpacity={0.7}>
-            <Text style={styles.refreshBtnText}>🔄 Refresh Data</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+            <TouchableOpacity
+              style={[styles.refreshBtn, { backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }]}
+              onPress={() => navigation?.navigate?.('Settings')}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.refreshBtnText, { color: '#1d4ed8' }]}>🔒 Ganti Sandi Admin</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.refreshBtn} onPress={loadAdminData} activeOpacity={0.7}>
+              <Text style={styles.refreshBtnText}>🔄 Refresh Data</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Tab Navigation */}
@@ -646,6 +686,14 @@ export const AdminScreen: React.FC<{ navigation?: any; route?: any }> = ({ navig
                             activeOpacity={0.7}
                           >
                             <Text style={styles.giveDiscountBtnText}>🏷️ Kasih Diskon Khusus</Text>
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            style={styles.resetPasswordBtn}
+                            onPress={() => handleSendResetPassword(user)}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={styles.resetPasswordBtnText}>🔑 Kirim Reset Sandi</Text>
                           </TouchableOpacity>
                         </View>
                       </View>
@@ -1437,6 +1485,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   giveDiscountBtnText: { color: '#1d4ed8', fontSize: 12, fontWeight: '700' },
+  resetPasswordBtn: {
+    backgroundColor: '#fefce8',
+    borderWidth: 1,
+    borderColor: '#fde047',
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  resetPasswordBtnText: { color: '#854d0e', fontSize: 12, fontWeight: '700' },
 
   // Coupons
   couponHeaderRow: {

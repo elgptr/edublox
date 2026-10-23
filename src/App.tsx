@@ -33,7 +33,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 // Injeksi perbaikan viewport mobile web agar tidak terpotong toolbar browser & layout selalu presisi
 if (Platform.OS === 'web' && typeof document !== 'undefined') {
-  const styleId = 'edublox-mobile-viewport-fix';
+  const styleId = 'edunesis-mobile-viewport-fix';
   if (!document.getElementById(styleId)) {
     const style = document.createElement('style');
     style.id = styleId;

@@ -93,7 +93,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ visible, onClose }
       setSubmitting(true);
       await firestoreService.sendFeedback({
         userId: currentUser?.uid || 'guest',
-        userEmail: currentUser?.email || 'guest@edublox.id',
+        userEmail: currentUser?.email || 'guest@edunesis.com',
         userName: currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Siswa',
         category,
         subject: subject.trim(),

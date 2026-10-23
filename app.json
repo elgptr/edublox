@@ -10,10 +10,10 @@
     "platforms": ["ios", "android", "web"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.edublox"
+      "bundleIdentifier": "com.anonymous.edunesis"
     },
     "android": {
-      "package": "com.anonymous.edublox",
+      "package": "com.anonymous.edunesis",
       "adaptiveIcon": {
         "foregroundImage": "./assets/edunesis-logo.jpg",
         "backgroundColor": "#ffffff"
